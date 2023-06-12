@@ -66,7 +66,7 @@ for i in range(epochs):
         history.append(i)
 
         if len(history) == step or len(history) < step and maze.state[y][x] == "\u229A":
-            reward = maze.valuesNew[y][x]bhjbhjhjbjhbbhjbhj
+            reward = maze.valuesNew[y][x]
             for y, x in history: # double check the order of the reward and the update
                 reward += -1
                 maze.valuesNew[y][x] = maze.valuesNew[y][x] + alpha * (reward - maze.valuesNew[y][x])
