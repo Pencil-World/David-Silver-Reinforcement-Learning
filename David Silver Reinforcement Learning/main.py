@@ -11,6 +11,7 @@ import numpy as np
 import random
 #from tensorflow import keras
 #import xgboost # much preferred
+# numpy np.random.randint is different than random random.randint
 
 # model-free prediction: estimate the value function of an unknown MDP
 # model-free control: optimise the value function of an unknown MDP
@@ -28,40 +29,10 @@ import random
 
 maze = Maze(3)
 maze.scrabble()
-pi = np.full([maze.shape, maze.shape, 4], 0.25) # the policy chooses actions from north, east, south, west
 epochs = 100
-maze.print()
-
-# def policy_evaluation(y, x, epsilon):
-#     if random.randint(100) < epsilon:
-#         adjacent = maze.returns[y][x]
-#         actions = np.where(adjacent == adjacent.max())[0]
-#     else:
-#         adjacent = maze.rewards[[y-1, y, y+1, y], [x, x+1, x, x-1]]
-#         actions = [elem for elem in adjacent if elem > -10**3]
-#     return actions[random.randint(len(actions))]
-
-# def policy_improvement(y, x):
-#     adjacent = maze.returns[y, x]
-#     actions = np.where(adjacent == adjacent.max())[0]
-#     pi[y][x] = np.zeros(4)
-#     pi[y][x][actions] = 1 / len(actions)
-        
-def policy_evaluation(y, x, epsilon):
-    if random.random() < epsilon:
-        adjacent = maze.values[[y-1, y, y+1, y], [x, x+1, x, x-1]]
-        actions = np.where(adjacent == adjacent.max())[0]
-    else:
-        adjacent = maze.rewards[[y-1, y, y+1, y], [x, x+1, x, x-1]]
-        actions = [i for i, elem in enumerate(adjacent) if elem > -10**3]
-    return actions[random.randint(0, len(actions) - 1)]
-
-def policy_improvement(y, x):
-    adjacent = maze.values[[y-1, y, y+1, y], [x, x+1, x, x-1]]
-    actions = np.where(adjacent == adjacent.max())[0]
-    pi[y][x] = np.zeros(4)
-    pi[y][x][actions] = 1 / len(actions)
+print(maze)
     
+# fix and update backwards compatibility
 # dynamic programming
 # k = 1 # how often to update the policy from the values. value iteration: k = 1, policy iteration: k > 1
 # isSynchronous = True
@@ -103,18 +74,16 @@ for i in range(epochs):
             maze.values[y][x] = maze.values[y][x] + alpha * (reward - maze.values[y][x])
             y, x = history[-1]
             history.popleft()
+            # maze.improvement
 
-        action = policy_evaluation(y, x, epsilon)
+        action = maze.evaluation(y, x, epsilon)
         y += 0 if action % 2 == 1 else action - 1
         x += 0 if action % 2 == 0 else 2 - action
     reward = maze.values[y][x]
     for y, x in list(history)[::-1]:
         reward = maze.rewards[y][x] + gamma * reward
         maze.values[y][x] = maze.values[y][x] + alpha * (reward - maze.values[y][x])
-for y in range(len(maze.values)):
-    for x in range(len(maze.values[y])):
-        policy_improvement(y, x)
 
 # next learning mumbo jumbo
 
-maze.print(pi)
+print(maze)
